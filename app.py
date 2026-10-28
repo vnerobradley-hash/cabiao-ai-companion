@@ -48,7 +48,7 @@ if "GEMINI_API_KEY" not in st.secrets:
     st.stop()
 
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-MODEL_ID = "gemini-3.8-flash"
+MODEL_ID = "gemini-2.5-flash"
 
 SYSTEM_INSTRUCTION = """
 You are a warm, empathetic, and non-judgmental conversational AI companion built specifically to support senior high school students who may be experiencing feelings of isolation, stress, or academic pressure. 
