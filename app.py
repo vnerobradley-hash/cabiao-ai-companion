@@ -1,6 +1,5 @@
 import streamlit as st
 from google import genai
-import time
 
 st.set_page_config(
     page_title="AI Companion | Research Study",
@@ -82,24 +81,15 @@ if user_prompt := st.chat_input("Type what's on your mind... (e.g., 'Feeling a b
     prompt_with_history = f"Previous conversation:\n{chat_context}\n\nUser: {user_prompt}"
 
     with st.chat_message("assistant"):
-        with st.spinner("Kumokonekta sa AI companion (sumusubok kung busy ang server)..."):
-            bot_reply = None
-            max_retries = 4
-            for attempt in range(max_retries):
-                try:
-                    response = client.models.generate_content(
-                        model=MODEL_ID,
-                        contents=prompt_with_history,
-                        config={"system_instruction": SYSTEM_INSTRUCTION}
-                    )
-                    bot_reply = response.text
-                    break
-                except Exception as e:
-                    if attempt < max_retries - 1:
-                        time.sleep(3)
-                    else:
-                        st.error(f"Pansamantalang abala ang server (503). Subukan muli pagkatapos ng ilang sandali. Detalye: {e}")
-
-            if bot_reply:
+        with st.spinner("Companion is thinking..."):
+            try:
+                response = client.models.generate_content(
+                    model=MODEL_ID,
+                    contents=prompt_with_history,
+                    config={"system_instruction": SYSTEM_INSTRUCTION}
+                )
+                bot_reply = response.text
                 st.markdown(bot_reply)
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+            except Exception as e:
+                st.error(f"Connection error occurred: {e}")
