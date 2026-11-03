@@ -82,24 +82,16 @@ if user_prompt := st.chat_input("Type what's on your mind... (e.g., 'Feeling a b
     prompt_with_history = f"Previous conversation:\n{chat_context}\n\nUser: {user_prompt}"
 
     with st.chat_message("assistant"):
-        with st.spinner("Connecting to AI companion (waiting for server traffic to clear)..."):
-            bot_reply = None
-            max_retries = 4
-            for attempt in range(max_retries):
-                try:
-                    response = client.models.generate_content(
-                        model=MODEL_ID,
-                        contents=prompt_with_history,
-                        config={"system_instruction": SYSTEM_INSTRUCTION}
-                    )
-                    bot_reply = response.text
-                    break
-                except Exception as e:
-                    if attempt < max_retries - 1:
-                        time.sleep(3) # Mas mahabang hintay para makalusot sa high demand
-                    else:
-                        st.error(f"An error occurred while connecting to the AI companion: {e}")
-
-            if bot_reply:
+        with st.spinner("Connecting to AI companion..."):
+            try:
+                # Gumagamit ng simpleng client.chats o diretsong generate_content
+                response = client.models.generate_content(
+                    model=MODEL_ID,
+                    contents=prompt_with_history,
+                    config={"system_instruction": SYSTEM_INSTRUCTION}
+                )
+                bot_reply = response.text
                 st.markdown(bot_reply)
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
+            except Exception as e:
+                st.error(f"Paumanhin, pansamantalang naabot ang limitasyon o may isyu sa server. Subukan ang ibang API key o maghintay sandali. Detalye: {e}")
