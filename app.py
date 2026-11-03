@@ -1,5 +1,6 @@
 import streamlit as st
 from google import genai
+import time
 
 st.set_page_config(
     page_title="AI Companion | Research Study",
@@ -44,7 +45,7 @@ if "GEMINI_API_KEY" not in st.secrets:
     st.stop()
 
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-MODEL_ID = "gemini-3.8-flash"
+MODEL_ID = "gemini-1.5-flash"
 
 SYSTEM_INSTRUCTION = """
 You are a warm, empathetic, and non-judgmental conversational AI companion built specifically to support senior high school students.
@@ -81,15 +82,27 @@ if user_prompt := st.chat_input("Type what's on your mind... (e.g., 'Feeling a b
     prompt_with_history = f"Previous conversation:\n{chat_context}\n\nUser: {user_prompt}"
 
     with st.chat_message("assistant"):
-        with st.spinner("Listening..."):
-            try:
-                response = client.models.generate_content(
-                    model=MODEL_ID,
-                    contents=prompt_with_history,
-                    config={"system_instruction": SYSTEM_INSTRUCTION}
-                )
-                bot_reply = response.text
+        with st.spinner("Connecting to AI companion..."):
+            bot_reply = None
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = client.models.generate_content(
+                        model=MODEL_ID,
+                        contents=prompt_with_history,
+                        config={
+                            "system_instruction": SYSTEM_INSTRUCTION,
+                            "http_options": {"api_version": "v1"}
+                        }
+                    )
+                    bot_reply = response.text
+                    break
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        time.sleep(2)
+                    else:
+                        st.error(f"An error occurred while connecting to the AI companion: {e}")
+
+            if bot_reply:
                 st.markdown(bot_reply)
                 st.session_state.messages.append({"role": "assistant", "content": bot_reply})
-            except Exception as e:
-                st.error(f"An error occurred while connecting to the AI companion: {e}")
