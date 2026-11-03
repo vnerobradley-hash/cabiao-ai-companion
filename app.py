@@ -45,7 +45,7 @@ if "GEMINI_API_KEY" not in st.secrets:
     st.stop()
 
 client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-MODEL_ID = "gemini-2.0-flash"
+MODEL_ID = "gemini-3.8-flash"
 
 SYSTEM_INSTRUCTION = """
 You are a warm, empathetic, and non-judgmental conversational AI companion built specifically to support senior high school students.
@@ -82,9 +82,9 @@ if user_prompt := st.chat_input("Type what's on your mind... (e.g., 'Feeling a b
     prompt_with_history = f"Previous conversation:\n{chat_context}\n\nUser: {user_prompt}"
 
     with st.chat_message("assistant"):
-        with st.spinner("Connecting to AI companion..."):
+        with st.spinner("Connecting to AI companion (waiting for server traffic to clear)..."):
             bot_reply = None
-            max_retries = 3
+            max_retries = 4
             for attempt in range(max_retries):
                 try:
                     response = client.models.generate_content(
@@ -96,7 +96,7 @@ if user_prompt := st.chat_input("Type what's on your mind... (e.g., 'Feeling a b
                     break
                 except Exception as e:
                     if attempt < max_retries - 1:
-                        time.sleep(2)
+                        time.sleep(3) # Mas mahabang hintay para makalusot sa high demand
                     else:
                         st.error(f"An error occurred while connecting to the AI companion: {e}")
 
